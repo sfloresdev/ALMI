@@ -1,17 +1,17 @@
 # ALMI
 Alexandria Library Management Interface
 
-[cite_start]**ALXI-ALMI** es una solución integral para la administración de bibliotecas, diseñada como un producto escalable con mentalidad de SaaS[cite: 2, 3]. Desarrollado sobre el ecosistema **Bun** para maximizar el rendimiento, la eficiencia y la modernidad en el desarrollo.
+**ALXI-ALMI** es una solución SaaS para la administración de bibliotecas. Desarrollado sobre el ecosistema **Bun** para maximizar el rendimiento, la eficiencia y sencillez en el desarrollo.
 
 ---
 
 ## Stack Tecnológico 
 
 * **Runtime & Package Manager:** [Bun](https://bun.sh/) (Soporte nativo para TypeScript y SQLite).
-* [cite_start]**Lenguaje:** [TypeScript](https://www.typescriptlang.org/) (Aplicación estricta de programación orientada a objetos)[cite: 6, 7].
+* **Lenguaje:** TypeScript
 * **Servidor HTTP:** Bun Native Server (Arquitectura de alto rendimiento sin dependencias pesadas).
-* [cite_start]**Base de Datos:** SQLite (vía `bun:sqlite`) (Persistencia en base de datos real)[cite: 9].
-* **Integraciones:** [OpenLibrary API](https://openlibrary.org/developers/api) para la automatización y enriquecimiento de libros.
+* **Base de Datos:** SQLite (vía `bun:sqlite`) (Persistencia en base de datos real).
+* **Integraciones:** [OpenLibrary API](https://openlibrary.org/developers/api) para enriquecimiento de datos.
 
 ---
 
@@ -32,13 +32,14 @@ Alexandria Library Management Interface
 │   │   └── types.ts        # Tipos e Interfaces compartidas Front/Back
 │   ├── data/               # Capa de Persistencia
 │   │   ├── database.ts
-│   │   └── seed.ts         # Script de carga de datos iniciales [cite: 25]
+│   │   └── seed.ts         # Script de carga de datos iniciales
 │   └── utils/              # Utilidades (Wrapper OpenLibrary API)
 ├── public/                 # Archivos estáticos (index.html)
 ├── tests/                  
 ├── .env                 
 ├── bun.lockb              
 └── package.json
+```
 
 ## 🔌 Catálogo de Endpoints (API Reference)
 
