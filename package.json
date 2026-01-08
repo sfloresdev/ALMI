@@ -1,0 +1,15 @@
+{
+  "name": "almi",
+  "module": "src/api/index.ts",
+  "type": "module",
+  "scripts": {
+      "dev": "bun --watch src/api/index.ts",
+      "start": "bun src/api/index.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.5"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
