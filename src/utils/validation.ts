@@ -1,11 +1,11 @@
 export class Validator {
     // Valida cadena vacia
-    public static isNotEmpty(value: string): boolean {
+    public static isEmpty(value: string): boolean {
         return value != null && value != undefined && value.trim().length > 0;
     }
 
     // Valida campo numerico vacio
-    public static numberNotEmpty(value: number): boolean {
+    public static numberEmpty(value: number): boolean {
         return value != null && value != undefined;
     }
 

@@ -35,19 +35,19 @@ export class Libro implements ILibro {
     }
 
     set titulo(valor: string) {
-        if (!Validator.isNotEmpty(valor))
+        if (!Validator.isEmpty(valor))
             throw new Error("Libro: Titulo cannot be empty");
         this._titulo = valor;
     }
 
     set autor(valor: string) {
-        if (!Validator.isNotEmpty(valor))
+        if (!Validator.isEmpty(valor))
             throw new Error("Libro: Autor cannot be empty");
         this._autor = valor;
     }
 
     set genero(valor: string) {
-        if (!Validator.isNotEmpty(valor))
+        if (!Validator.isEmpty(valor))
             throw new Error("Libro: Género cannot be empty");
         this._genero = valor;
     }

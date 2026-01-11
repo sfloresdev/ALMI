@@ -26,7 +26,7 @@ export class Prestamo implements IPrestamo {
     get fechaDevolucion(): string | null { return this._fechaDevolucion; }
 
     set fechaPrestamo(valor: string) {
-        if (!Validator.isNotEmpty(valor))
+        if (!Validator.isEmpty(valor))
             throw new Error("Prestamo: Loan date cannot empty");
         if (!Validator.isValidDate(valor))
             throw new Error("Prestamo: Invalid format -> (YYYY-MM-DD)");
@@ -34,7 +34,7 @@ export class Prestamo implements IPrestamo {
     }
 
     set fechaLimite(valor: string) {
-        if (!Validator.isNotEmpty(valor))
+        if (!Validator.isEmpty(valor))
             throw new Error("Prestamo: Return date cannot empty");
         if (!Validator.isValidDate(valor))
             throw new Error("Prestamo: Invalid format -> (YYYY-MM-DD)");
@@ -48,7 +48,7 @@ export class Prestamo implements IPrestamo {
             return;
         }
         // Si se introducen datos, se validan
-        if (!Validator.isNotEmpty(valor))
+        if (!Validator.isEmpty(valor))
             throw new Error("Prestamo: Users return date cannot empty");
         if (!Validator.isValidDate(valor))
             throw new Error("Prestamo: Invalid format -> (YYYY-MM-DD)");

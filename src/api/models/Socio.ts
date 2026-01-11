@@ -23,19 +23,19 @@ export class Socio implements ISocio {
     get telefono() { return this._telefono }
 
     set nombre(valor: string) {
-        if (!Validator.isNotEmpty(valor))
+        if (!Validator.isEmpty(valor))
             throw new Error("Socio: Nombre cannot be empty");
         this._nombre = valor;
     }
 
     set apellidos(valor: string) {
-        if (!Validator.isNotEmpty(valor))
+        if (!Validator.isEmpty(valor))
             throw new Error("Socio: Nombre cannot be empty");
         this._apellidos = valor;
     }
 
     set email(valor: string) {
-        if (!Validator.isNotEmpty(valor))
+        if (!Validator.isEmpty(valor))
             throw new Error("Socio: Email cannot be empty");
         if (!Validator.isValidEmail(valor))
             throw new Error("Socio: Email invalid format");
@@ -43,7 +43,7 @@ export class Socio implements ISocio {
     }
 
     set telefono(valor: string) {
-        if (!Validator.isNotEmpty(valor))
+        if (!Validator.isEmpty(valor))
             throw new Error("Socio: Telefono cannot be empty");
         this._telefono = valor;
     }

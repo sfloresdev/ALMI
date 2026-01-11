@@ -20,13 +20,13 @@ export class Devolucion implements IDevolucion {
     get comentarios(): string | null { return this._comentarios }
 
     set prestamoId(valor: number) {
-        if (!Validator.numberNotEmpty(valor))
+        if (!Validator.numberEmpty(valor))
             throw new Error("Devolucion: Loan_id cannot be empty");
         this._prestamoId = valor;
     }
 
     set fechaDevolucion(valor: string) {
-        if (!Validator.isNotEmpty(valor))
+        if (!Validator.isEmpty(valor))
             throw new Error("Devolucion: Return date cannot empty");
         if (!Validator.isValidDate(valor))
             throw new Error("Devolucion: Invalid format -> (YYYY-MM-DD)");
