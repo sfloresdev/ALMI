@@ -6,5 +6,7 @@ export const routes = {
   "/": HomeView,
   "/socios": SociosView,
   "/libros": LibrosView,
+  /* "/prestamos": PrestamosView,
+  "/devoluciones": Devoluciones, */
   "/404": () => "<h2>404 - Página no encontrada</h2>"
 };
