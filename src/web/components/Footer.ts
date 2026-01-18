@@ -8,13 +8,13 @@ export class Footer extends Component {
         return html`
         <div class="footer-container">
             <div class="footer-info">
-                <p>2026 ALMI Library</p>
+                <p>ALMI Library</p>
                 <span class="divider">•</span>
                 <p class="dedication">Controla tu libreria personal</p>
             </div>
 
             <div class="footer-team">
-                <span>Desarrollado con <span class="heart">❤</span> por:</span>
+                <span>Desarrollado con <span class="heart"> ❤ </span> por:</span>
                 <div class="members">
                     <a href="https://github.com/mcajas-rdev" target="_blank" class="github-link"><span class="member-link">Mario Cajas</span></a>
                     <a href="https://github.com/sfloresdev" target="_blank" class="github-link"><span class="member-link">Sergio Flores</span></a>

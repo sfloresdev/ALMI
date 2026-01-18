@@ -3,17 +3,17 @@ import { Validator } from "../../utils/validation";
 
 export class Socio implements ISocio {
     private _id?: number;
-    private _nombre: string;
-    private _apellidos: string;
-    private _email: string;
-    private _telefono: string;
+    private _nombre: string = "";
+    private _apellidos: string = "";
+    private _email: string = "";
+    private _telefono: string = "";
 
     constructor(datos: ISocio) {
         this._id = datos.id;
-        this._nombre = datos.nombre;
-        this._apellidos = datos.apellidos;
-        this._email = datos.email;
-        this._telefono = datos.telefono;
+        this.nombre = datos.nombre;
+        this.apellidos = datos.apellidos;
+        this.email = datos.email;
+        this.telefono = datos.telefono;
     }
 
     get id() { return this._id; }

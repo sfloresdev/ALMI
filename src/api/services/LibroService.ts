@@ -21,7 +21,7 @@ export class LibroService {
         });
     }
 
-    getCoverUrl(isbn: string, size: 'S' | 'M' | 'L'): string{
+    getCoverUrl(isbn: string, size: 'S' | 'M' | 'L' = 'M'): string{
         return `${this.coverBaseUrl}${isbn}-${size}.jpg`;
     }
 }

@@ -1,15 +1,29 @@
+import { initDb } from "../data/database";
+import { SocioController } from "./controllers/socio.controller";
+
+const socioController = new SocioController();
+
+initDb();
+
+/*
+Servidor HTTP nativo de Bun:
+1. Se crea la URL de nuestro sitio
+2. Manejamos las rutas de la API con un condicional, llama a una funcion
+3. Automatizamos la transpilacion de TS a JS
+4. Maneja el sevidor estatico (index.html) punto de entrada a la app
+*/
 const server = Bun.serve({
     port: 4047,
     async fetch(req: Request): Promise<Response> {
-        // URL de nuestro sitio
+        // 1.
         const url = new URL(req.url);
 
-        // Rutas de la API, si se solicita el recurso llama a handleApiRoutes()
+        //2. Rutas de la API
         if (url.pathname.startsWith("/api/")) {
             return handleApiRoutes(req, url);
         }
 
-        // Rutas de SRC y logica de transpilacion a codigo JS
+        // 3. Logica de transpilacion
         if (url.pathname.startsWith("/src")) {
             let filePath = `.${url.pathname}`
             const fileRef = Bun.file(filePath);
@@ -24,19 +38,19 @@ const server = Bun.serve({
             const file = Bun.file(filePath);
 
             if (await file.exists()) {
-                if (filePath.endsWith(".ts")){
+                if (filePath.endsWith(".ts")) {
                     const tsCode = await file.text()
-                    const transpiler = new Bun.Transpiler({loader: "ts"})
+                    const transpiler = new Bun.Transpiler({ loader: "ts" })
                     const jsCode = transpiler.transformSync(tsCode);
                     return new Response(jsCode, {
-                        headers: {"Content-Type": "application/javascript"}
+                        headers: { "Content-Type": "application/javascript" }
                     })
                 }
             }
             return new Response(file);
         }
 
-        // Ruta del servidor Estático (Frontend)
+        //4. Ruta del servidor Estático (Frontend)
         let publicPath = `./public${url.pathname === "/" ? "/index.html" : url.pathname}`
         const file = Bun.file(publicPath);
 
@@ -47,14 +61,22 @@ const server = Bun.serve({
     },
 });
 
-// Funcion para manejar las rutas de cada endpoint
-// return: devuelve 404 si aun no esta implementado
+/*
+Funcion para manejar las rutas de cada endpoint
+return: devuelve 404 si aun no esta implementado
+*/
 function handleApiRoutes(req: Request, url: URL) {
+    if (url.pathname == "/api/socios" && req.method === "GET") {
+        return socioController.getSocios();
+    }
+
+    
+
     if (url.pathname == "/api/status")
-        return Response.json("ALMI Online", {status: 200});
-    // Respuesta por defecto para la API
+        return Response.json("ALMI Online", { status: 200 });
+
     return Response.json("Endpoint no implementado", { status: 404 });
 }
 
-/* console.log(`Port: ${server.port}`);
-console.log(`Server Running at ${server.url}`); */
+console.log(`Port: ${server.port}`);
+console.log(`Server Running at ${server.url}`);

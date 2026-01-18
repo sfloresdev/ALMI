@@ -8,7 +8,6 @@ export class Libro implements ILibro {
     private _titulo: string;
     private _autor: string;
     private _genero: string;
-    //private _portadaUrl?: string;
     private _disponible: boolean;
 
     constructor(datos: ILibro) {
