@@ -1,20 +1,21 @@
 import { db } from "../../data/database";
-import type { Socio } from "../../shared/types";
+import type { Socio as ISocio} from "../../shared/types";
+import { Socio } from "../models/Socio";
 
 export class SocioService {
 
-    private selectAllQuery = db.query("SELECT * FROM socios");
-    private selectByIdQuery = db.query("SELECT * FROM socios WHERE id = $id");
+    //private selectAllQuery = db.query("SELECT * FROM socios");
+    /* private selectByIdQuery = db.query("SELECT * FROM socios WHERE id = $id");
     private createSocioQuery = db.query("INSERT INTO socios (nombre, apellidos, email, telefono) VALUES ($nombre, $apellidos, $email, $telefono)");
     private updateByIdQuery = db.query("UPDATE socios SET nombre = $nombre, apellidos = $apellidos, email = $email, telefono = $telefono WHERE id = $id");
-    private deleteByIdQuery = db.query("DELETE FROM socios WHERE id = $id");
+    private deleteByIdQuery = db.query("DELETE FROM socios WHERE id = $id"); */
 
     // GET all "Socios"
-    public getAll(): Socio[] {
-        return this.selectAllQuery.all() as Socio[];
+    public getAll(): ISocio[] {
+        return db.query("SELECT * FROM socios").all() as ISocio[];
     }
 
-    // GET "Socios" by ID
+/*     // GET "Socios" by ID
     public getById(id: number): Socio | null {
         return this.selectByIdQuery.get({ $id: id }) as Socio | null;
     }
@@ -48,7 +49,7 @@ export class SocioService {
             $id: id
         });
         return result.changes > 0;
-    }
+    } */
 }
 
 

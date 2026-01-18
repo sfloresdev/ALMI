@@ -1,7 +1,7 @@
 import { initDb } from "../data/database";
-import { SocioController } from "./controllers/socio.controller";
+import { SocioService } from "./services/SocioService"; 
 
-const socioController = new SocioController();
+const socioService = new SocioService();
 
 initDb();
 
@@ -67,11 +67,9 @@ return: devuelve 404 si aun no esta implementado
 */
 function handleApiRoutes(req: Request, url: URL) {
     if (url.pathname == "/api/socios" && req.method === "GET") {
-        return socioController.getSocios();
+        const socios = socioService.getAll();
+        return Response.json(socios, {status: 200});
     }
-
-    
-
     if (url.pathname == "/api/status")
         return Response.json("ALMI Online", { status: 200 });
 

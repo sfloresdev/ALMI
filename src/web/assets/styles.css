@@ -563,3 +563,91 @@ body {
         display: none;
     }
 }
+
+/* === VISTA DE SOCIOS / TABLAS === */
+
+.view-container {
+    padding-bottom: 2rem;
+}
+
+.table-container {
+    overflow-x: auto; /* Scroll horizontal en móviles */
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--card-bg);
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    text-align: left;
+}
+
+/* CABECERA */
+.data-table th {
+    background-color: rgba(255, 255, 255, 0.03);
+    padding: 1rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
+}
+
+/* FILAS */
+.data-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+    vertical-align: middle;
+}
+
+/* Última fila sin borde */
+.data-table tr:last-child td {
+    border-bottom: none;
+}
+
+.data-table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* UTILIDADES TABLA */
+.text-right { text-align: right; }
+.text-secondary { color: var(--text-secondary); }
+.font-medium { font-weight: 500; }
+
+.id-badge {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-family: monospace;
+}
+
+/* Mensajes de estado (Loading/Empty) */
+.loading-cell, .empty-cell, .error-cell {
+    text-align: center;
+    padding: 3rem !important;
+    color: var(--text-secondary);
+}
+.error-cell { color: var(--error-color); }
+
+/* BOTONES DE ACCIÓN (Iconos simples) */
+.btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    opacity: 0.7;
+    transition: opacity 0.2s, transform 0.2s;
+    padding: 0.2rem;
+}
+
+.btn-icon:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.btn-icon.delete:hover {
+    filter: grayscale(100%) brightness(0.8) sepia(1) hue-rotate(-50deg) saturate(5); /* Truco para ponerlo rojo sin cambiar color font */
+}

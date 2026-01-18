@@ -14,7 +14,7 @@ export class DevolucionController {
             return Response.json(devoluciones, { status: 200 });
         } catch (error) {
             console.error(error);
-            return Response.json({ erro: "Error interno del servidor" }, { status: 500 })
+            return Response.json({ error: "Error interno del servidor" }, { status: 500 })
         }
     }
 }

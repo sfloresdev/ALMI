@@ -12,7 +12,9 @@ export class SocioController {
     // GET "api/socios"
     public getSocios(): Response {
         try {
+            console.log("Peticion recibida Backend");
             const socios = this.socioService.getAll();
+            console.log(`Backend: devuelve una respuesta -> ${socios.length}`)
             return Response.json(socios, { status: 200 });
         } catch (error) {
             console.error(error);
@@ -20,7 +22,7 @@ export class SocioController {
         }
     }
 
-    // POST "api/socios"
+    /* // POST "api/socios"
     public async createSocio(req: Request): Promise<Response> {
         try {
             const body = await req.json();
@@ -38,5 +40,5 @@ export class SocioController {
                 { status: 400 }
             );
         }
-    }
+    } */
 }

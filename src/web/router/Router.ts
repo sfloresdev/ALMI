@@ -1,10 +1,12 @@
-type View = () => Promise<string> | string;
+import { Component } from "../components/Component";
+
+type ViewConstructor = new () => Component;
 
 export class Router {
-  private routes: Record<string, View>;
+  private routes: Record<string, ViewConstructor>;
   private outlet: HTMLElement;
 
-  constructor(routes: Record<string, View>, outletId: string) {
+  constructor(routes: Record<string, ViewConstructor>, outletId: string) {
     const el = document.getElementById(outletId);
     if (!el) throw new Error("View outlet not found");
 
@@ -16,8 +18,17 @@ export class Router {
   }
 
   async loadRoute(path = window.location.pathname) {
-    const view = this.routes[path] || this.routes["/404"];
-    this.outlet.innerHTML = await view();
+    const ViewClass = this.routes[path] || this.routes["/404"];
+    if (!ViewClass) {
+      this.outlet.innerHTML = "<h2>404 - Ruta no definida</h2>";
+      return;
+    }
+
+    const viewInstance = new ViewClass();
+    this.outlet.innerHTML = viewInstance.render();
+    if (viewInstance.afterRender) {
+      await viewInstance.afterRender();
+    }
   }
 
   navigate(path: string) {
@@ -26,10 +37,12 @@ export class Router {
   }
 
   private handleLinkClick(e: Event) {
-    const target = e.target as HTMLElement;
-    if (target.matches("[data-link]")) {
+    const target = (e.target as HTMLElement).closest("a");
+
+    if (target && target.matches("[data-link]")) {
       e.preventDefault();
-      this.navigate(target.getAttribute("href")!);
+      const href = target.getAttribute("href")
+      if (href) this.navigate(href);
     }
   }
 }
