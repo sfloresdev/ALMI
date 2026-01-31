@@ -46,7 +46,7 @@ export const initDb = () => {
             prestamo_id INTEGER UNIQUE NOT NULL,
             fecha_devolucion TEXT NOT NULL,
             comentarios TEXT,
-            FOREIGN KEY (prestamo_id) REFERENCES prestamos(id));`)
+            FOREIGN KEY (prestamo_id) REFERENCES prestamos(id) ON DELETE CASCADE);`)
 
         console.log("Tables succesfully created!")
 }

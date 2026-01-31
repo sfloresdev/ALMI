@@ -1,15 +1,15 @@
 import { Component } from "../components/Component";
-import { LibroService } from '../../api/services/LibroService';
+import { LibrosService } from "../services/LibroService";
 import  type { Libro } from "../../shared/types";
 
 const html = String.raw;
 
 export class HomeView extends Component {
-  private libroService: LibroService;
+  private libroService: LibrosService ;
 
   constructor() {
     super();
-    this.libroService = new LibroService();
+    this.libroService = new LibrosService();
   }
 
   render(): string {

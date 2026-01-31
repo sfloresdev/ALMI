@@ -1,7 +1,10 @@
 import { initDb } from "../data/database";
-import { SocioService } from "./services/SocioService"; 
+import { LibroController } from './controllers/libro.controller';
+import { SocioController } from "./controllers/socio.controller";
 
-const socioService = new SocioService();
+const socioController = new SocioController();
+const libroController = new LibroController();
+
 
 initDb();
 
@@ -57,7 +60,7 @@ const server = Bun.serve({
         if (await file.exists()) return new Response(file);
 
         // Garantizamos que siempre hay response
-        return new Response("Not Found", { status: 404 })
+        return new Response(Bun.file("./public/index.html"));
     },
 });
 
@@ -66,10 +69,34 @@ Funcion para manejar las rutas de cada endpoint
 return: devuelve 404 si aun no esta implementado
 */
 function handleApiRoutes(req: Request, url: URL) {
-    if (url.pathname == "/api/socios" && req.method === "GET") {
-        const socios = socioService.getAll();
-        return Response.json(socios, {status: 200});
+
+    // SOCIOS
+    if (url.pathname == "/api/socios") {
+        if (req.method === "GET") return socioController.getSocios();
+        if (req.method === "POST") return socioController.createSocio(req);
     }
+    const matchSocio = url.pathname.match(/^\/api\/socios\/(\d+)$/);
+    if (matchSocio) {
+        const id = parseInt(matchSocio[1]);
+
+        if (req.method === "GET") return socioController.getSocioById(id);
+        if (req.method === "PUT") return socioController.updateSocio(id, req);
+        if (req.method === "DELETE") return socioController.deleteSocio(id);
+    }
+
+    // LIBROS
+    if (url.pathname == "/api/libros") {
+        if (req.method === "GET") return libroController.getLibros();
+        if (req.method === "POST") return libroController.createLibro(req);
+    }
+    const matchLibro = url.pathname.match(/^\/api\/libros\/(\d+)$/)
+    if (matchLibro) {
+        const id = parseInt(matchLibro[1]);
+
+        if (req.method === "DELETE") return libroController.deleteLibro(id);
+    }
+
+    // STATUS/HEALTH
     if (url.pathname == "/api/status")
         return Response.json("ALMI Online", { status: 200 });
 

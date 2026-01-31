@@ -1,4 +1,4 @@
-import { DevolucionService } from '../services/DevolucionService';
+import { DevolucionService } from '../services/devolucion.services';
 
 export class DevolucionController {
 

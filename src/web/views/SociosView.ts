@@ -1,5 +1,5 @@
 import { Component } from "../components/Component";
-import { SociosService } from "../services/SociosService";
+import { SociosService } from "../services/SocioService";
 import type { Socio } from "../../shared/types";
 
 const html = String.raw;
@@ -14,7 +14,7 @@ export class SociosView extends Component {
 
   render(): string {
     return html`
-    <div class="view-container">
+    <div class="home-container">
       <div class="section-header">
           <h2>Gestión de Socios</h2>
           <p>Listado completo de miembros de la biblioteca</p>
@@ -44,7 +44,7 @@ export class SociosView extends Component {
 
   async afterRender() {
     const tbody = document.getElementById('socios-tbody');
-    if (!tbody) return ;
+    if (!tbody) return;
 
     try {
       const socios = await this.sociosService.getAllSocios();
@@ -52,11 +52,11 @@ export class SociosView extends Component {
       tbody.innerHTML = '';
 
       // Importante reutilizar estos componentes de 'error' en Prestamos
-      if (socios.length === 0){
+      if (socios.length === 0) {
         tbody.innerHTML = '<tr><td colspan="5" class="empty-cell">No hay socios registrados.</td></tr>';
       }
 
-      socios.forEach(socio => {
+      socios.forEach((socio: Socio) => {
         const row = this.generateRow(socio);
         tbody.insertAdjacentHTML('beforeend', row);
       });
@@ -73,8 +73,8 @@ export class SociosView extends Component {
       <td class="text-secondary">${socio.email}</td>
       <td>${socio.telefono || '-'}</td>
       <td class="text-right">
-          <button class="btn-icon" title="Editar"></button>
-          <button class="btn-icon delete" title="Eliminar"></button>
+          <button class="btn-icon" title="Editar">✏️</button>
+          <button class="btn-icon delete" title="Eliminar">🗑️</button>
       </td>
     </tr>    
     `;

@@ -14,7 +14,7 @@ export class Libro implements ILibro {
         this._id = datos.id;
         this._isbn = datos.isbn;
         this._titulo = datos.titulo;
-        this._autor = datos.titulo;
+        this._autor = datos.autor;
         this._genero = datos.genero;
         //this._portadaUrl = datos.portadaUrl;
         this._disponible = datos.disponible ?? true;
