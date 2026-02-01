@@ -20,6 +20,20 @@ export class LibroController {
         }
     }
 
+    // GET ("api/libros/genero/:genero")
+    public getLibrosPorGenero(genero: string): Response {
+        try {
+            const generoDecodificado = decodeURIComponent(genero);
+
+            const libros = this.libroService.getByGenero(generoDecodificado);
+
+            return Response.json(libros, { status: 200 });
+        } catch (error) {
+            return Response.json({ error: "Error interno buscando por genero" }, { status: 500 })
+        }
+    }
+
+
     // POST ("/api/libros")
     public async createLibro(req: Request): Promise<Response> {
         try {
@@ -37,7 +51,7 @@ export class LibroController {
         }
     }
 
-    // DELETE ("api/libros:id")
+    // DELETE ("api/libros/:id")
     public deleteLibro(id: number) {
         const succes = this.libroService.deleteLibro(id);
         if (!succes) return Response.json({ error: "Libro not found" }, { status: 404 });

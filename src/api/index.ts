@@ -1,10 +1,11 @@
 import { initDb } from "../data/database";
 import { LibroController } from './controllers/libro.controller';
 import { SocioController } from "./controllers/socio.controller";
+import { PrestamoController } from "./controllers/prestamo.controller";
 
 const socioController = new SocioController();
 const libroController = new LibroController();
-
+const prestamoController = new PrestamoController();
 
 initDb();
 
@@ -89,11 +90,27 @@ function handleApiRoutes(req: Request, url: URL) {
         if (req.method === "GET") return libroController.getLibros();
         if (req.method === "POST") return libroController.createLibro(req);
     }
+    const matchGenero = url.pathname.match(/^\/api\/libros\/genero\/(.+)$/)
+    if (matchGenero) {
+        const genero = matchGenero[1];
+        if (req.method === "GET") return libroController.getLibrosPorGenero(genero);
+    }
     const matchLibro = url.pathname.match(/^\/api\/libros\/(\d+)$/)
     if (matchLibro) {
         const id = parseInt(matchLibro[1]);
-
         if (req.method === "DELETE") return libroController.deleteLibro(id);
+    }
+
+    // PRESTAMOS
+    if (url.pathname === "/api/prestamos/")
+        if (req.method === "POST") return prestamoController.createPrestamo(req);
+
+    if (url.pathname === "/api/prestamos/activos")
+        if (req.method === "GET") return prestamoController.getActivos();
+
+    if (url.pathname === "/api/prestamos/devoluciones") {
+        if (req.method === "GET") return prestamoController.getHistorial();
+        if (req.method === "POST") return prestamoController.createDevolucion(req);
     }
 
     // STATUS/HEALTH

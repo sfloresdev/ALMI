@@ -9,6 +9,12 @@ export class LibroService {
         return db.query("SELECT * FROM libros").all() as ILibro[];
     }
 
+    // GET/genero
+    public getByGenero(genero: string): ILibro[]{
+        return db.query(`SELECT * FROM libros WHERE LOWER(genero) = LOWER($genero)`)
+                 .all({$genero: genero}) as ILibro[];
+    }
+
     // POST
     public createLibro(libro: Libro): number {
         const query = db.prepare(`

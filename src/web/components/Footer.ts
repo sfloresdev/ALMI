@@ -8,7 +8,7 @@ export class Footer extends Component {
         return html`
         <div class="footer-container">
             <div class="footer-info">
-                <p>ALMI Library</p>
+                <p>ALMI</p>
                 <span class="divider">•</span>
                 <p class="dedication">Controla tu libreria personal</p>
             </div>

@@ -1,4 +1,4 @@
-import { db } from "../../data/database";
+/* import { db } from "../../data/database";
 import type { Devolucion } from "../../shared/types";
 
 export class DevolucionService {
@@ -9,4 +9,4 @@ export class DevolucionService {
     public getAll(): Devolucion[] {
         return this.selectAllQuery.all() as Devolucion[];
     }
-}
+} */
