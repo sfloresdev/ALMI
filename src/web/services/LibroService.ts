@@ -23,6 +23,25 @@ export class LibrosService {
         }
     }
 
+    async createBook(libro: Omit<Libro, 'id' | 'disponible'>): Promise<boolean> {
+        try {
+            const response = await fetch('/api/libros', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    ...libro,
+                    disponible: true
+                })
+            });
+            return response.ok;
+        } catch (error) {
+            console.error("Error creando libro: ", error)
+            return false;
+        }
+    }
+
     async deleteBook(id: number): Promise<boolean> {
         try {
             const response = await fetch(`/api/libros/${id}`, { method: 'DELETE' });

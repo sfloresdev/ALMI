@@ -268,7 +268,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.3) 100%);
+    background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.3) 100%);
     z-index: 1;
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -304,7 +304,7 @@ body {
     color: white;
     letter-spacing: 0.05rem;
     z-index: 2;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     transition: transform 0.2s ease;
 }
 
@@ -388,8 +388,15 @@ body {
 }
 
 @keyframes pulse {
-    0%, 100% { opacity: 0.6; }
-    50% { opacity: 1; }
+
+    0%,
+    100% {
+        opacity: 0.6;
+    }
+
+    50% {
+        opacity: 1;
+    }
 }
 
 /* Responsive */
@@ -397,11 +404,11 @@ body {
     .home-container {
         padding: 1.5rem 1rem;
     }
-    
+
     .section-header h2 {
         font-size: 1.5rem;
     }
-    
+
     .books-grid {
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
         gap: 1rem;
@@ -564,37 +571,46 @@ body {
     }
 }
 
-/* === VISTA DE SOCIOS / TABLAS === */
+/* =========================================
+   ESTILOS ESPECÍFICOS PARA GESTIÓN (SOCIOS)
+   ========================================= */
 
+/* --- TABLA DE DATOS --- */
 .view-container {
-    padding-bottom: 2rem;
+    padding-bottom: 4rem; /* Espacio extra abajo para el scroll */
 }
 
 .table-container {
-    overflow-x: auto; /* Scroll horizontal en móviles */
     border: 1px solid var(--border-color);
     border-radius: 8px;
     background-color: var(--card-bg);
+    overflow: hidden; /* Para que los bordes redondeados funcionen en la tabla */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .data-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 0.9rem;
-    text-align: left;
 }
 
-/* CABECERA */
-.data-table th {
+/* Cabecera de la tabla */
+.data-table thead {
     background-color: rgba(255, 255, 255, 0.03);
-    padding: 1rem;
-    font-weight: 500;
-    color: var(--text-secondary);
     border-bottom: 1px solid var(--border-color);
-    white-space: nowrap;
 }
 
-/* FILAS */
+.data-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+}
+
+/* Cuerpo de la tabla */
 .data-table td {
     padding: 1rem;
     border-bottom: 1px solid var(--border-color);
@@ -602,97 +618,133 @@ body {
     vertical-align: middle;
 }
 
-/* Última fila sin borde */
 .data-table tr:last-child td {
-    border-bottom: none;
+    border-bottom: none; /* Quitar borde al último elemento */
+}
+
+.data-table tbody tr {
+    transition: background-color 0.2s ease;
 }
 
 .data-table tbody tr:hover {
-    background-color: rgba(255, 255, 255, 0.02);
+    background-color: rgba(255, 255, 255, 0.04); /* Hover suave en filas */
 }
 
-/* UTILIDADES TABLA */
-.text-right { text-align: right; }
-.text-secondary { color: var(--text-secondary); }
-.font-medium { font-weight: 500; }
-
+/* Badge para el ID (#1, #2...) */
 .id-badge {
+    display: inline-block;
     background-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
     padding: 2px 6px;
     border-radius: 4px;
-    font-size: 0.8rem;
     font-family: monospace;
+    font-size: 0.8rem;
 }
 
-/* Mensajes de estado (Loading/Empty) */
-.loading-cell, .empty-cell, .error-cell {
-    text-align: center;
-    padding: 3rem !important;
-    color: var(--text-secondary);
-}
-.error-cell { color: var(--error-color); }
+/* Alineaciones */
+.text-right { text-align: right; }
+.font-medium { font-weight: 500; }
+.text-secondary { color: var(--text-secondary); }
 
-/* BOTONES DE ACCIÓN (Iconos simples) */
+/* --- BOTONES DE ACCIÓN (Lápiz y Basura) --- */
 .btn-icon {
-    background: none;
+    background: transparent;
     border: none;
     cursor: pointer;
+    padding: 6px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
     font-size: 1.1rem;
     opacity: 0.7;
-    transition: opacity 0.2s, transform 0.2s;
-    padding: 0.2rem;
 }
 
 .btn-icon:hover {
     opacity: 1;
+    background-color: rgba(255, 255, 255, 0.1);
     transform: scale(1.1);
 }
 
-.btn-icon.delete:hover {
-    filter: grayscale(100%) brightness(0.8) sepia(1) hue-rotate(-50deg) saturate(5); /* Truco para ponerlo rojo sin cambiar color font */
+/* Color específico para Editar (Azul/Cian) al hacer hover */
+.edit-trigger:hover {
+    filter: drop-shadow(0 0 2px var(--accent-color));
 }
 
-/* === MODAL (Ventana Emergente) === */
+/* Color específico para Borrar (Rojo) al hacer hover */
+.delete-trigger:hover {
+    background-color: rgba(255, 77, 79, 0.1);
+    filter: grayscale(100%) brightness(0.8) sepia(1) hue-rotate(-50deg) saturate(5);
+}
+
+/* --- MODAL (DIALOG) --- */
 dialog.modal {
-    background-color: var(--card-bg);
+    background: var(--card-bg);
     color: var(--text-primary);
     border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border-radius: 12px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
     padding: 0;
+    max-width: 450px;
     width: 90%;
-    max-width: 400px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    margin: auto; /* Centrado automático nativo */
 }
 
+/* Fondo oscurecido detrás del modal */
 dialog.modal::backdrop {
     background-color: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px); /* Efecto borroso pro */
 }
 
-.modal-content { padding: 1.5rem; text-align: center; }
+.modal-content {
+    padding: 2rem;
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    font-size: 1.4rem;
+    color: var(--text-primary);
+}
+
+/* Inputs del formulario dentro del modal */
+.form-group label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.4rem;
+}
+
+.input-field {
+    width: 100%;
+    background-color: #000; /* Fondo más oscuro que la tarjeta */
+    border: 1px solid var(--border-color);
+    color: white;
+    padding: 0.7rem;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+    box-sizing: border-box; /* IMPORTANTE para que el padding no rompa el ancho */
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px rgba(0, 112, 243, 0.2);
+}
 
 .modal-actions {
+    margin-top: 2rem;
     display: flex;
-    justify-content: center;
+    justify-content: flex-end;
     gap: 1rem;
-    margin-top: 1.5rem;
 }
 
-/* Variantes de botones reutilizando tu clase .btn */
+/* Botón secundario (Cancelar) */
 .btn-secondary {
     background-color: transparent;
     border: 1px solid var(--border-color);
     color: var(--text-secondary);
-    width: auto; /* Sobrescribe el width: 100% si lo tenías */
 }
 
-.btn-danger {
-    background-color: rgba(220, 38, 38, 0.2);
-    color: #ef4444;
-    border: 1px solid rgba(220, 38, 38, 0.5);
-    width: auto;
-}
-.btn-danger:hover {
-    background-color: #dc2626;
-    color: white;
+.btn-secondary:hover {
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
 }
