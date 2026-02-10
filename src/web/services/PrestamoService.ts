@@ -4,7 +4,7 @@ export class PrestamoService {
 
 	async getPrestamosActivos(): Promise<Prestamo[]> {
 		try {
-			const response = await fetch("/api/prestamos/activos");
+			const response = await fetch("/api/prestamos");
 
 			if (!response.ok) return [];
 
@@ -56,8 +56,7 @@ export class PrestamoService {
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify({
-					prestamo_id: prestamoId,
-					fecha_fin: new Date().toISOString().split('T')[0],
+					prestamoId: prestamoId,
 					comentarios: comentarios
 				})
 			});

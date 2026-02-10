@@ -128,7 +128,7 @@ export class SociosView extends Component {
         alert("Error al guardar los datos.");
     });
 
-    // --- EDITAR y BORRAR ---
+    // EDITAR y BORRAR
     tbody?.addEventListener('click', async (e) => {
       const target = e.target as HTMLElement;
 

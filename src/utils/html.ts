@@ -1,3 +1,3 @@
 // Esta función no hace NADA, solo devuelve el texto.
-// Pero sirve para "marcar" el string para el editor.
+// Pero sirve para "marcar" el string para el IDE.
 const html = (strings: TemplateStringsArray, ...values: any[]) => String.raw({ raw: strings }, ...values);

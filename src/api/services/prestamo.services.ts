@@ -73,9 +73,9 @@ export class PrestamoService {
 
     public getPrestamosActivos() {
         return db.query(`
-            SELECT p.id, p.fecha_prestamo, p.fecha_limite,
-                   l.titulo, l.isbn,
-                   s.nombre || ' ' || s.apellidos as nombre_socio
+            SELECT p.id, p.fecha_prestamo as fecha_inicio, p.fecha_limite,
+                   l.titulo as libro_titulo, l.isbn,
+                   s.nombre || ' ' || s.apellidos as socio_nombre
             FROM prestamos p
             JOIN libros l ON p.libro_id = l.id
             JOIN socios s ON p.socio_id = s.id
@@ -86,7 +86,7 @@ export class PrestamoService {
     public getHistorialDevoluciones() {
         return db.query(`
             SELECT d.id, d.fecha_devolucion, d.comentarios,
-                   l.titulo, s.nombre || ' ' || s.apellidos as nombre_socio
+                   l.titulo as libro_titulo, s.nombre || ' ' || s.apellidos as socio_nombre
             FROM devoluciones d
             JOIN prestamos p ON d.prestamo_id = p.id
             JOIN libros l ON p.libro_id = l.id

@@ -102,11 +102,10 @@ function handleApiRoutes(req: Request, url: URL) {
     }
 
     // PRESTAMOS
-    if (url.pathname === "/api/prestamos/")
+    if (url.pathname === "/api/prestamos") {
         if (req.method === "POST") return prestamoController.createPrestamo(req);
-
-    if (url.pathname === "/api/prestamos/activos")
         if (req.method === "GET") return prestamoController.getActivos();
+    }
 
     if (url.pathname === "/api/prestamos/devoluciones") {
         if (req.method === "GET") return prestamoController.getHistorial();
