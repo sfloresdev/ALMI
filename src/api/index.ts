@@ -98,6 +98,7 @@ function handleApiRoutes(req: Request, url: URL) {
     const matchLibro = url.pathname.match(/^\/api\/libros\/(\d+)$/)
     if (matchLibro) {
         const id = parseInt(matchLibro[1]);
+        if (req.method === "PUT") return libroController.updateLibro(id, req);
         if (req.method === "DELETE") return libroController.deleteLibro(id);
     }
 

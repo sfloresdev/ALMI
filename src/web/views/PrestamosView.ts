@@ -1,10 +1,11 @@
 import { Component } from "../components/Component";
 import { PrestamoService } from "../services/PrestamoService";
 import { SociosService } from "../services/SocioService";
-import type { Prestamo, Libro, Socio } from "../../shared/types";
 import { LibrosService } from "../services/LibroService";
+import type { Libro, Socio } from "../../shared/types";
 
 const html = String.raw;
+
 export class PrestamosView extends Component {
 
 	private prestamoService: PrestamoService;
@@ -39,11 +40,12 @@ export class PrestamosView extends Component {
                             <th>Libro</th>
                             <th>Socio</th>
                             <th>Fecha Inicio</th>
+                            <th>Fecha Límite</th>
                             <th class="text-right">Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="prestamos-tbody">
-                        <tr><td colspan="5" class="loader" style="text-align: center; padding: 2rem;">Cargando préstamos...</td></tr>
+                        <tr><td colspan="6" class="loader" style="text-align: center; padding: 2rem;">Cargando préstamos...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -68,9 +70,16 @@ export class PrestamosView extends Component {
                             </select>
                         </div>
 
-                        <div class="form-group">
-                            <label>Fecha Préstamo</label>
-                            <input type="date" id="fecha-inicio" name="fecha_inicio" class="input-field" required readonly>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label>Fecha Préstamo</label>
+                                <input type="date" id="fecha-inicio" name="fecha_inicio" class="input-field" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Fecha Límite</label>
+                                <input type="date" id="fecha-limite" name="fecha_limite" class="input-field" required>
+                            </div>
                         </div>
 
                         <div class="modal-actions" style="justify-content: flex-end; margin-top: 1rem;">
@@ -90,69 +99,85 @@ export class PrestamosView extends Component {
 		const newLoanBtn = document.getElementById('new-loan-btn');
 		const cancelBtn = document.getElementById('cancel-loan-btn');
 
+		const fechaInicioInput = document.getElementById('fecha-inicio') as HTMLInputElement;
+		const fechaLimiteInput = document.getElementById('fecha-limite') as HTMLInputElement;
+
 		if (!tbody || !modal) return;
 
-		// 2. Cargar datos iniciales de la tabla
 		await this.loadPrestamosActivos();
 
-		// 3. EVENTO: Abrir Modal
+		// ABRIR MODAL
 		newLoanBtn?.addEventListener('click', async () => {
 			form.reset();
 
-			const today = new Date().toISOString().split('T')[0];
-			(document.getElementById('fecha-inicio') as HTMLInputElement).value = today;
+			// Lógica de fechas (Hoy y +15 días)
+			const today = new Date();
+			const limit = new Date();
+			limit.setDate(today.getDate() + 15);
+
+			const todayStr = today.toISOString().split('T')[0];
+
+			fechaInicioInput.value = todayStr;
+			fechaLimiteInput.value = limit.toISOString().split('T')[0];
+
+			fechaInicioInput.min = todayStr;
+			fechaLimiteInput.min = todayStr;
 
 			modal.showModal();
 
-			// Cargamos los desplegables
+			// Cargar los desplegables
 			await this.loadSelectOptions();
 		});
 
-		// 4. Cerrar Modal
+		// Actualizar fecha límite automáticamente al cambiar inicio
+		fechaInicioInput?.addEventListener('change', () => {
+			if (fechaInicioInput.value) {
+				fechaLimiteInput.min = fechaInicioInput.value;
+				const newDate = new Date(fechaInicioInput.value);
+				newDate.setDate(newDate.getDate() + 15);
+				fechaLimiteInput.value = newDate.toISOString().split('T')[0];
+			}
+		});
+
 		cancelBtn?.addEventListener('click', () => modal.close());
 
-		// 5. Enviar Formulario (Crear Préstamo)
+		// ENVIAR FORMULARIO
 		form.addEventListener('submit', async (e) => {
 			e.preventDefault();
 			const formData = new FormData(form);
 
-			// Preparamos los datos
-			// Nota: Aquí usamos Omit<Prestamo, 'id'>, así que construimos el objeto
+			// SIMPLIFICACIÓN TOTAL:
+			// Al usar <select>, el valor que nos llega YA ES EL ID.
+			// No hace falta buscar paréntesis ni hacer regex.
 			const nuevoPrestamo = {
 				libroId: Number(formData.get('libro_id')),
 				socioId: Number(formData.get('socio_id')),
 				fechaPrestamo: formData.get('fecha_inicio') as string,
-				fechaLimite: "" // Opcional, depende de tu lógica
+				fechaLimite: formData.get('fecha_limite') as string
 			};
 
 			const success = await this.prestamoService.createPrestamo(nuevoPrestamo);
 
 			if (success) {
 				modal.close();
-				await this.loadPrestamosActivos(); // Recargar tabla
+				await this.loadPrestamosActivos();
 				alert("Préstamo registrado correctamente.");
 			} else {
 				alert("Error al registrar el préstamo.");
 			}
 		});
 
-		// 6. Devolver Libro
+		// DEVOLVER LIBRO
 		tbody.addEventListener('click', async (e) => {
 			const target = (e.target as HTMLElement).closest('.return-trigger');
-
 			if (target) {
 				const id = Number(target.getAttribute('data-id'));
-
-				// Usamos prompt para pedir comentario opcional
-				const comentario = prompt("¿Confirmar devolución? Puedes añadir un comentario (opcional):", "Devolución correcta");
+				const comentario = prompt("¿Confirmar devolución? Comentario (opcional):", "Devolución correcta");
 
 				if (comentario !== null) {
 					const success = await this.prestamoService.createDevolucion(id, comentario);
-
 					if (success) {
-						// Eliminamos la fila visualmente para que sea rápido
 						target.closest('tr')?.remove();
-						// Opcional: await this.loadPrestamosActivos();
 					} else {
 						alert("Error al procesar la devolución.");
 					}
@@ -170,22 +195,24 @@ export class PrestamosView extends Component {
 			tbody.innerHTML = '';
 
 			if (prestamos.length === 0) {
-				tbody.innerHTML = '<tr><td colspan="5" class="empty-cell">No hay préstamos activos.</td></tr>';
+				tbody.innerHTML = '<tr><td colspan="6" class="empty-cell" style="text-align: center; padding: 1rem;">No hay préstamos activos.</td></tr>';
 				return;
 			}
 			prestamos.forEach((p: any) => {
-				const fecha = p.fecha_inicio ? new Date(p.fecha_inicio).toLocaleDateString() : '-';
+				const fInicio = p.fecha_inicio ? new Date(p.fecha_inicio).toLocaleDateString() : '-';
+				const fLimite = p.fecha_limite ? new Date(p.fecha_limite).toLocaleDateString() : '-';
 
 				const rowHTML = html`
                 <tr>
                     <td><span class="id-badge">#${p.id}</span></td>
                     <td class="font-medium">
-                        ${p.libro_titulo || p.libroTitulo || 'Libro ID ' + (p.libro_id || p.libroId)}
+                        ${p.libro_titulo || 'Libro ' + p.libro_id}
                     </td>
                     <td>
-                        ${p.socio_nombre || p.socioNombre || 'Socio ID ' + (p.socio_id || p.socioId)}
+                        ${p.socio_nombre || 'Socio ' + p.socio_id}
                     </td>
-                    <td>${fecha}</td>
+                    <td>${fInicio}</td>
+                    <td style="color: var(--text-secondary);">${fLimite}</td>
                     <td class="text-right">
                         <button class="btn return-trigger" 
                                 style="font-size: 0.8rem; padding: 0.3rem 0.8rem;"
@@ -198,10 +225,11 @@ export class PrestamosView extends Component {
 				tbody.insertAdjacentHTML('beforeend', rowHTML);
 			});
 		} catch (error) {
-			tbody.innerHTML = '<tr><td colspan="5" class="error-cell">Error cargando datos</td></tr>';
+			tbody.innerHTML = '<tr><td colspan="6" class="error-cell">Error cargando datos</td></tr>';
 		}
 	}
 
+	// CARGA DE SELECTS (Clásico y efectivo)
 	private async loadSelectOptions() {
 		const socioSelect = document.getElementById('socio-select') as HTMLSelectElement;
 		const libroSelect = document.getElementById('libro-select') as HTMLSelectElement;
@@ -213,28 +241,30 @@ export class PrestamosView extends Component {
 			const socios = await this.socioService.getAllSocios();
 			socioSelect.innerHTML = '<option value="">Selecciona un socio...</option>';
 			socios.forEach((s: Socio) => {
+				// VALUE = ID, TEXTO = Nombre
 				socioSelect.innerHTML += `<option value="${s.id}">${s.nombre} ${s.apellidos}</option>`;
 			});
 		} catch (e) {
-			socioSelect.innerHTML = '<option>Error cargando socios</option>';
+			socioSelect.innerHTML = '<option value="">Error cargando socios</option>';
 		}
 
 		// 2. Cargar Libros
 		try {
 			const libros = await this.libroService.getAllBooks();
-			// Filtramos solo libros con disponible === true (o 1)
 			const disponibles = libros.filter((l: Libro) => l.disponible);
 
 			libroSelect.innerHTML = '<option value="">Selecciona un libro...</option>';
+
 			if (disponibles.length === 0) {
-				libroSelect.innerHTML += '<option disabled>No hay libros disponibles</option>';
+				libroSelect.innerHTML = '<option value="" disabled>No hay libros disponibles</option>';
 			} else {
 				disponibles.forEach((l: Libro) => {
+					// VALUE = ID, TEXTO = Título
 					libroSelect.innerHTML += `<option value="${l.id}">${l.titulo} (${l.isbn})</option>`;
 				});
 			}
 		} catch (e) {
-			libroSelect.innerHTML = '<option>Error cargando libros</option>';
+			libroSelect.innerHTML = '<option value="">Error cargando libros</option>';
 		}
 	}
 }

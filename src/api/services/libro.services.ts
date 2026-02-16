@@ -10,9 +10,9 @@ export class LibroService {
     }
 
     // GET/genero
-    public getByGenero(genero: string): ILibro[]{
+    public getByGenero(genero: string): ILibro[] {
         return db.query(`SELECT * FROM libros WHERE LOWER(genero) = LOWER($genero)`)
-                 .all({$genero: genero}) as ILibro[];
+            .all({ $genero: genero }) as ILibro[];
     }
 
     // POST
@@ -32,6 +32,32 @@ export class LibroService {
     }
 
     // PUT
+    public updateLibro(id: number, libro: Partial<ILibro>): boolean {
+        let disponibleVal: number | null = null;
+        if (libro.disponible !== undefined)
+            disponibleVal = libro.disponible ? 1 : 0;
+
+        const query = db.prepare(`
+            UPDATE libros
+            SET
+                isbn = COALESCE($isbn, isbn),
+                titulo = COALESCE($titulo, titulo),
+                autor = COALESCE($autor, autor),
+                genero = COALESCE($genero, genero),
+                disponible = COALESCE($disponible, disponible)
+            WHERE id = $id
+            `)
+        const result = query.run({
+            $id: id,
+            $isbn: libro.isbn || null,
+            $titulo: libro.titulo || null,
+            $autor: libro.autor || null,
+            $genero: libro.genero || null,
+            $disponible: disponibleVal
+        });
+        return result.changes > 0;
+    }
+
 
     // DELETE
     public deleteLibro(id: number): boolean {

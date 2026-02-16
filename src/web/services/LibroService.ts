@@ -42,6 +42,22 @@ export class LibrosService {
         }
     }
 
+    async updateBook(id: number, libro: Partial<Libro>): Promise<boolean> {
+        try {
+            const response = await fetch(`api/libros/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(libro)
+            });
+            return response.ok;
+        } catch (error) {
+            console.error("Error actualizando libro: ", error);
+            return false;
+        }
+    }
+
     async deleteBook(id: number): Promise<boolean> {
         try {
             const response = await fetch(`/api/libros/${id}`, { method: 'DELETE' });
@@ -51,9 +67,20 @@ export class LibrosService {
         }
     }
 
-    getCoverUrl(isbn: string, size: 'S' | 'M' | 'L' = 'M'): string {
-        if (!isbn) return "https://images.placeholders.dev/?width=180&height=280&text=Sin%20Portada&backgroundColor=%23f1f5f9&textColor=%23475569";
-        return `${this.coverBaseUrl}${isbn}-${size}.jpg`;
+    public getPlaceHolderImage(): string {
+        const svg = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="180" height="280" viewBox="0 0 180 280">
+                <rect width="100%" height="100%" fill="#374151"/>
+                <text x="50%" y="45%" font-size="60" text-anchor="middle" dominant-baseline="middle">📚</text>
+                <text x="50%" y="65%" font-family="sans-serif" font-weight="bold" font-size="16" fill="#e4e9e9" text-anchor="middle">Sin Portada</text>
+            </svg>`.trim();
+        return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
     }
 
+    getCoverUrl(isbn: string, size: 'S' | 'M' | 'L' = 'M'): string {
+        if (!isbn) {
+            return this.getPlaceHolderImage();
+        }
+        return `${this.coverBaseUrl}${isbn}-${size}.jpg?default=false`;
+    }
 }

@@ -59,7 +59,7 @@ export class HomeView extends Component {
     const statusClass = book.disponible ? 'status-available' : 'status-unavailable';
     const statusText = book.disponible ? 'Disponible': 'Prestado';
 
-    const fallbackImage = "";
+    const fallbackImage = this.libroService.getPlaceHolderImage();
 
     return html`
     <article class="book-card">
@@ -67,7 +67,7 @@ export class HomeView extends Component {
           <img src="${coverUrl}" 
                 alt="${book.titulo}" 
                 loading="lazy"
-                onerror="this.src='${fallbackImage}'">
+                onerror="this.onerror=null;this.src='${fallbackImage}'">
           <span class="status-badge ${statusClass}">${statusText}</span>
       </div>
       

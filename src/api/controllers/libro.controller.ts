@@ -51,6 +51,24 @@ export class LibroController {
         }
     }
 
+
+    // PUT ("api/libros/:id")
+    public async updateLibro(id: number, req: Request): Promise<Response> {
+        try {
+            const body = await req.json();
+
+            const actualizado = this.libroService.updateLibro(id, body);
+
+            if (!actualizado) {
+                return Response.json({ error: "Libro no encontrado para actualizar" }, { status: 404 })
+            }
+            return Response.json({ message: "Libro actualizado correctamente" }, { status: 200 })
+        } catch (error) {
+            return Response.json({ error: "Error actualizando el libro" }, { status: 500 })
+        }
+    }
+
+
     // DELETE ("api/libros/:id")
     public deleteLibro(id: number) {
         const succes = this.libroService.deleteLibro(id);

@@ -7,6 +7,7 @@ const html = String.raw;
 export class LibrosView extends Component {
   private libroService: LibrosService
   private currentDeleteId: number | null = null;
+  private currentEditId: number | null = null;
 
   constructor() {
     super();
@@ -56,29 +57,37 @@ export class LibrosView extends Component {
 
       <dialog id="create-modal" class="modal">
         <div class="modal-content" style="text-align: left;">
-          <h3 style="margin-bottom: 1rem;">Nuevo Libro</h3>
+          <h3 id="modal-title" style="margin-bottom: 1rem;">Nuevo Libro</h3>
+          
           <form id="create-book-form" style="display: flex; flex-direction: column; gap: 1rem;">
+            
             <div class="form-group">
               <label>ISBN</label>
-              <input type="text" name="isbn" class="input-field" required placeholder="Ej: 978-1234567890">
+              <input type="text" id="input-isbn" name="isbn" class="input-field" required placeholder="Ej: 978-1234567890">
             </div>
+            
             <div class="form-group">
               <label>Título</label>
-              <input type="text" name="titulo" class="input-field" required>
+              <input type="text" id="input-titulo" name="titulo" class="input-field" required>
             </div>
+            
             <div class="form-group">
               <label>Autor</label>
-              <input type="text" name="autor" class="input-field" required>
+              <input type="text" id="input-autor" name="autor" class="input-field" required>
             </div>
+            
             <div class="form-group">
               <label>Género</label>
-              <select name="genero" class="input-field">
-                <option value="Novela">Novela</option>
-                <option value="Ciencia Ficción">Ciencia Ficción</option>
-                <option value="Terror">Terror</option>
-                <option value="Ensayo">Ensayo</option>
-                <option value="Técnico">Técnico</option>
-              </select>
+              <input type="text" 
+                     name="genero" 
+                     id="input-genero" 
+                     class="input-field" 
+                     list="genre-suggestions" 
+                     placeholder="Escribe o selecciona..."
+                     required>
+              
+              <datalist id="genre-suggestions">
+                 </datalist>
             </div>
 
             <div class="modal-actions" style="justify-content: flex-end; margin-top: 1rem;">
@@ -96,6 +105,7 @@ export class LibrosView extends Component {
     const tbody = document.getElementById('libros-tbody');
     const deleteModal = document.getElementById('delete-modal') as HTMLDialogElement;
     const createModal = document.getElementById('create-modal') as HTMLDialogElement;
+    const modalTitle = document.getElementById('modal-title');
 
     if (!tbody || !deleteModal || !createModal) return;
 
@@ -109,60 +119,84 @@ export class LibrosView extends Component {
 
     // Abrir modal crear
     addBookBtn?.addEventListener('click', () => {
-        createForm.reset();
-        createModal.showModal();
+      this.currentEditId = null; // Reseteamos ID
+      createForm.reset();
+      if (modalTitle) modalTitle.textContent = "Nuevo Libro";
+      createModal.showModal();
     });
 
     // Cancelar crear
     cancelCreateBtn?.addEventListener('click', () => createModal.close());
 
-    // Submit crear
+    // Submit (Crear o Editar)
     createForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(createForm);
-        
-        const newBook = {
-            isbn: formData.get('isbn') as string,
-            titulo: formData.get('titulo') as string,
-            autor: formData.get('autor') as string,
-            genero: formData.get('genero') as string
-        };
+      e.preventDefault();
+      const formData = new FormData(createForm);
 
-        const success = await this.libroService.createBook(newBook);
-        
-        if (success) {
-            createModal.close();
-            this.loadTable(); // Recargamos la tabla para ver el nuevo libro
-        } else {
-            alert("Error al crear libro. Revisa los datos.");
-        }
-    });
+      const bookData = {
+        isbn: formData.get('isbn') as string,
+        titulo: formData.get('titulo') as string,
+        autor: formData.get('autor') as string,
+        genero: formData.get('genero') as string
+      };
 
-    // LOGICA DE BORRADO
-    const cancelDeleteBtn = document.getElementById('cancel-btn');
-    const confirmDeleteBtn = document.getElementById('confirm-btn');
+      let success;
 
-    // Event delegation para abrir modal borrar
-    tbody.addEventListener('click', (e) => {
-      const target = (e.target as HTMLElement).closest('.delete-trigger');
-      if (target) {
-        this.currentDeleteId = Number(target.getAttribute('data-id'));
-        deleteModal.showModal();
+      // 4. LÓGICA CONDICIONAL: ¿Editamos o Creamos?
+      if (this.currentEditId) {
+        success = await this.libroService.updateBook(this.currentEditId, bookData);
+      } else {
+        success = await this.libroService.createBook(bookData);
+      }
+
+      if (success) {
+        createModal.close();
+        this.loadTable();
+      } else {
+        alert("Error al guardar libro.");
       }
     });
 
-    // Cancelar borrar
+    // LOGICA DE BORRADO Y EDICIÓN (Event Delegation)
+    const cancelDeleteBtn = document.getElementById('cancel-btn');
+    const confirmDeleteBtn = document.getElementById('confirm-btn');
+
+    tbody.addEventListener('click', (e) => {
+      const target = (e.target as HTMLElement);
+
+      // A. Click en BORRAR
+      const deleteTrigger = target.closest('.delete-trigger');
+      if (deleteTrigger) {
+        this.currentDeleteId = Number(deleteTrigger.getAttribute('data-id'));
+        deleteModal.showModal();
+        return;
+      }
+
+      // B. Click en EDITAR (AÑADIDO)
+      const editTrigger = target.closest('.edit-trigger') as HTMLElement;
+      if (editTrigger) {
+        this.currentEditId = Number(editTrigger.dataset.id);
+
+        // Rellenamos el formulario leyendo los datos del botón
+        (document.getElementById('input-isbn') as HTMLInputElement).value = editTrigger.dataset.isbn || '';
+        (document.getElementById('input-titulo') as HTMLInputElement).value = editTrigger.dataset.titulo || '';
+        (document.getElementById('input-autor') as HTMLInputElement).value = editTrigger.dataset.autor || '';
+        (document.getElementById('input-genero') as HTMLInputElement).value = editTrigger.dataset.genero || '';
+
+        if (modalTitle) modalTitle.textContent = "Editar Libro";
+        createModal.showModal();
+      }
+    });
+
     cancelDeleteBtn?.addEventListener('click', () => {
       deleteModal.close();
       this.currentDeleteId = null;
     });
 
-    // Confirmar borrar
     confirmDeleteBtn?.addEventListener('click', async () => {
       if (this.currentDeleteId) {
         const success = await this.libroService.deleteBook(this.currentDeleteId);
         if (success) {
-          // Recargamos tabla para asegurar consistencia.
           document.getElementById(`row-${this.currentDeleteId}`)?.remove();
           deleteModal.close();
         } else {
@@ -174,11 +208,24 @@ export class LibrosView extends Component {
 
   private async loadTable() {
     const tbody = document.getElementById('libros-tbody');
+    const genreDatalist = document.getElementById('genre-suggestions');
     if (!tbody) return;
 
     try {
       const books = await this.libroService.getAllBooks();
       tbody.innerHTML = '';
+
+      if (genreDatalist) {
+        const uniqueGenres = new Set(books.map(b => b.genero).filter(g => g));
+
+        const defaultGenres = ["Novela", "Ciencia Ficción", "Terror", "Ensayo", "Técnico"];
+        defaultGenres.forEach(g => uniqueGenres.add(g));
+
+        genreDatalist.innerHTML = '';
+        uniqueGenres.forEach(genre => {
+          genreDatalist.innerHTML += `<option value="${genre}"></option>`;
+        });
+      }
 
       if (books.length === 0) {
         tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 1rem;">No hay libros disponibles</td></tr>';
@@ -186,8 +233,10 @@ export class LibrosView extends Component {
       }
 
       books.forEach(book => {
-        const statusClass = book.disponible ? 'status-available' : 'status-unavailable';
-        const statusText = book.disponible ? 'Disponible' : 'Prestado';
+        // Aseguramos booleano para evitar errores visuales
+        const isAvailable = Boolean(book.disponible);
+        const statusClass = isAvailable ? 'status-available' : 'status-unavailable';
+        const statusText = isAvailable ? 'Disponible' : 'Prestado';
 
         const rowHTML = html`
           <tr id="row-${book.id}">
@@ -198,6 +247,15 @@ export class LibrosView extends Component {
                 <span class="status-badge ${statusClass}">${statusText}</span>
              </td>
              <td class="text-right">
+                <button class="btn-icon edit-trigger" 
+                        title="Editar"
+                        data-id="${book.id}"
+                        data-isbn="${book.isbn}"
+                        data-titulo="${book.titulo}"
+                        data-autor="${book.autor}"
+                        data-genero="${book.genero}">
+                    ✏️
+                </button>
                 <button class="btn-icon delete-trigger" data-id="${book.id}" title="Eliminar">🗑️</button>
              </td>
           </tr>
