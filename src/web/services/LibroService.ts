@@ -15,13 +15,42 @@ export class LibrosService {
                 console.error("El backend no devolvió una lista:", data)
                 return [];
             }
-
             return data as Libro[];
         } catch (error) {
             console.error("Error obteniendo libros ", error);
             return [];
         }
     }
+
+    async getBooksByGenre(genero: string): Promise<Libro[]> {
+        try {
+            const url = `/api/libros/genero/${encodeURIComponent(genero)}`;
+
+            const response = await fetch(url);
+            if (!response.ok) {
+                console.error(`Error ${response.status} obteniendo libros por género`);
+                return [];
+            }
+            return await response.json();
+        } catch (error) {
+            console.error("Error obteniendo libros por género", error);
+            return [];
+        }
+    }
+
+    async searchBooks(termino: string): Promise<Libro[]> {
+    try {
+        const response = await fetch(`/api/libros/buscar/${encodeURIComponent(termino)}`);
+        if (!response.ok) {
+            // Si el backend devuelve 400 (menos de 2 caracteres), devolvemos vacio
+            return []; 
+        }
+        return await response.json();
+    } catch (error) {
+        console.error("Error en el buscador:", error);
+        return [];
+    }
+}
 
     async createBook(libro: Omit<Libro, 'id' | 'disponible'>): Promise<boolean> {
         try {

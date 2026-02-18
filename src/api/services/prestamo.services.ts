@@ -8,7 +8,9 @@ export class PrestamoService {
         const libro = db.query(`SELECT disponible FROM libros WHERE id = $id`).get({ $id: libroId }) as any;
 
         if (!libro) return { success: false, message: "The book does not exist" };
-        if (libro.disponible === 0) return { success: false, message: "The nook is not available" }
+        if (libro.disponible === 0 || libro.disponible === false) {
+            return { success: false, message: "El libro no está disponible" };
+        }
 
         /*
         En la transaccion creamos la fecha que se realiza prestamo
@@ -36,8 +38,13 @@ export class PrestamoService {
             return result.lastInsertRowid;
         });
 
-        const prestamoId = transaction() as number;
-        return { success: true, message: "Loan done succesfully", id: prestamoId };
+        try {
+            const prestamoId = transaction() as number;
+            return { success: true, message: "Préstamo registrado correctamente", id: prestamoId };
+        } catch (error) {
+            console.error(error);
+            return { success: false, message: "Error en la transacción" };
+        }
     }
 
     public registrarDevolucion(prestamoId: number, comentarios?: string): { success: boolean, message: string } {
@@ -67,15 +74,27 @@ export class PrestamoService {
                 UPDATE libros SET disponible = 1 WHERE id = $lid
             `).run({ $lid: prestamo.libro_id });
         });
-        transtaction();
-        return { success: true, message: "Devolución registrada correctamente" }
+
+        try {
+            transtaction();
+            return { success: true, message: "Devolución registrada correctamente" };
+        } catch (error) {
+            console.error(error);
+            return { success: false, message: "Error al registrar la devolución" };
+        }
     }
 
     public getPrestamosActivos() {
         return db.query(`
-            SELECT p.id, p.fecha_prestamo as fecha_inicio, p.fecha_limite,
-                   l.titulo as libro_titulo, l.isbn,
-                   s.nombre || ' ' || s.apellidos as socio_nombre
+            SELECT 
+                p.id, 
+                p.fecha_prestamo as fechaInicio, 
+                p.fecha_limite as fechaLimite,
+                l.titulo as libro_titulo, 
+                l.isbn,
+                s.nombre || ' ' || s.apellidos as socio_nombre,
+                p.libro_id as libroId, 
+                p.socio_id as socioId
             FROM prestamos p
             JOIN libros l ON p.libro_id = l.id
             JOIN socios s ON p.socio_id = s.id
@@ -85,13 +104,33 @@ export class PrestamoService {
 
     public getHistorialDevoluciones() {
         return db.query(`
-            SELECT d.id, d.fecha_devolucion, d.comentarios,
-                   l.titulo as libro_titulo, s.nombre || ' ' || s.apellidos as socio_nombre
+            SELECT 
+                d.id, 
+                d.fecha_devolucion, 
+                d.comentarios,
+                p.fecha_prestamo as fechaInicio, -- Añadido
+                p.fecha_limite as fechaLimite,   -- Añadido
+                l.titulo as libro_titulo, 
+                s.nombre || ' ' || s.apellidos as socio_nombre,
+                p.libro_id as libroId, 
+                p.socio_id as socioId
             FROM devoluciones d
             JOIN prestamos p ON d.prestamo_id = p.id
             JOIN libros l ON p.libro_id = l.id
             JOIN socios s ON p.socio_id = s.id
             ORDER BY d.fecha_devolucion DESC
         `).all();
+    }
+
+    public getPrestamosBySocio(socioId: number) {
+        return db.query(`
+        SELECT p.id, p.fecha_prestamo as fechaInicio, p.fecha_limite as fechaLimite, 
+               p.fecha_devolucion as fechaDevolucion, l.titulo as libro_titulo,
+               (p.fecha_devolucion IS NOT NULL) as esHistorial
+        FROM prestamos p
+        JOIN libros l ON p.libro_id = l.id
+        WHERE p.socio_id = $sid
+        ORDER BY p.fecha_prestamo DESC
+    `).all({ $sid: socioId });
     }
 }

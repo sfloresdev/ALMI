@@ -9,6 +9,8 @@ export class LibrosView extends Component {
   private currentDeleteId: number | null = null;
   private currentEditId: number | null = null;
 
+  private allBooksCache: Libro[] = [];
+
   constructor() {
     super();
     this.libroService = new LibrosService();
@@ -23,9 +25,16 @@ export class LibrosView extends Component {
             <h2>Gestión de Libros</h2>
             <p>Administra y edita el inventario</p>
         </div>
-        <button id="add-book-btn" class="btn btn-primary">
-            + Nuevo Libro
-        </button>
+        
+        <div style="display: flex; gap: 1rem;">
+             <select id="genre-filter" class="input-field" style="width: auto; min-width: 150px; cursor: pointer; background-color: #111;">
+                <option value="todos">Todos los géneros</option>
+                </select>
+
+            <button id="add-book-btn" class="btn btn-primary">
+                + Nuevo Libro
+            </button>
+        </div>
       </div>
 
       <div class="table-container">
@@ -35,11 +44,12 @@ export class LibrosView extends Component {
                 <th>ISBN</th>
                 <th>Título</th>
                 <th>Autor</th>
-                <th>Estado</th> <th class="text-right">Acciones</th>
+                <th>Género</th> <th>Estado</th> 
+                <th class="text-right">Acciones</th>
               </tr>
           </thead>
           <tbody id="libros-tbody">
-              <tr><td colspan="5" class="loader" style="text-align: center; padding: 2rem;">Cargando catálogo...</td></tr>
+              <tr><td colspan="6" class="loader" style="text-align: center; padding: 2rem;">Cargando catálogo...</td></tr>
           </tbody>
         </table>
       </div>
@@ -85,9 +95,7 @@ export class LibrosView extends Component {
                      list="genre-suggestions" 
                      placeholder="Escribe o selecciona..."
                      required>
-              
-              <datalist id="genre-suggestions">
-                 </datalist>
+              <datalist id="genre-suggestions"></datalist>
             </div>
 
             <div class="modal-actions" style="justify-content: flex-end; margin-top: 1rem;">
@@ -103,6 +111,9 @@ export class LibrosView extends Component {
 
   async afterRender(): Promise<void> {
     const tbody = document.getElementById('libros-tbody');
+    const genreFilter = document.getElementById('genre-filter') as HTMLSelectElement;
+
+    // Modales
     const deleteModal = document.getElementById('delete-modal') as HTMLDialogElement;
     const createModal = document.getElementById('create-modal') as HTMLDialogElement;
     const modalTitle = document.getElementById('modal-title');
@@ -110,7 +121,19 @@ export class LibrosView extends Component {
     if (!tbody || !deleteModal || !createModal) return;
 
     // 1. Cargar tabla inicialmente
-    await this.loadTable();
+    await this.loadInitialData();
+
+    genreFilter?.addEventListener('change', async () => {
+      const genero = genreFilter.value;
+      if (genero === 'todos') {
+        // Si selecciona todos, tiramos de cache o recargamos todo
+        this.renderTable(this.allBooksCache);
+      } else {
+        // Si selecciona un género, llamamos al endpoint específico
+        const filteredBooks = await this.libroService.getBooksByGenre(genero);
+        this.renderTable(filteredBooks);
+      }
+    });
 
     // LOGICA DE CREACION
     const addBookBtn = document.getElementById('add-book-btn');
@@ -151,7 +174,8 @@ export class LibrosView extends Component {
 
       if (success) {
         createModal.close();
-        this.loadTable();
+        await this.loadInitialData();
+        genreFilter.value = 'todos'
       } else {
         alert("Error al guardar libro.");
       }
@@ -206,65 +230,81 @@ export class LibrosView extends Component {
     });
   }
 
-  private async loadTable() {
+  // Carga inicial: Para rellenar el select
+  private async loadInitialData() {
+    try {
+      this.allBooksCache = await this.libroService.getAllBooks();
+      this.populateFilters();
+      this.renderTable(this.allBooksCache);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+  // Rellena el select con los generos de manera unica
+  private populateFilters() {
+    const select = document.getElementById('genre-filter') as HTMLSelectElement;
+    const datalist = document.getElementById('genre-suggestions'); // Para el modal de crear
+
+    if (!select) return;
+
+    const generos = Array.from(new Set(this.allBooksCache.map(b => b.genero).filter(g => g)));
+    generos.sort();
+
+    // Rellenar Select de Filtro
+    select.innerHTML = '<option value="todos">Todos los géneros</option>';
+    generos.forEach(g => {
+      select.innerHTML += `<option value="${g}">${g}</option>`;
+    });
+
+    // Rellenar Datalist del Modal (Sugerencias)
+    if (datalist) {
+      datalist.innerHTML = '';
+      generos.forEach(g => {
+        datalist.innerHTML += `<option value="${g}"></option>`;
+      });
+    }
+  }
+
+  private renderTable(books: Libro[]) {
     const tbody = document.getElementById('libros-tbody');
-    const genreDatalist = document.getElementById('genre-suggestions');
     if (!tbody) return;
 
-    try {
-      const books = await this.libroService.getAllBooks();
-      tbody.innerHTML = '';
+    tbody.innerHTML = '';
 
-      if (genreDatalist) {
-        const uniqueGenres = new Set(books.map(b => b.genero).filter(g => g));
-
-        const defaultGenres = ["Novela", "Ciencia Ficción", "Terror", "Ensayo", "Técnico"];
-        defaultGenres.forEach(g => uniqueGenres.add(g));
-
-        genreDatalist.innerHTML = '';
-        uniqueGenres.forEach(genre => {
-          genreDatalist.innerHTML += `<option value="${genre}"></option>`;
-        });
-      }
-
-      if (books.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 1rem;">No hay libros disponibles</td></tr>';
-        return;
-      }
-
-      books.forEach(book => {
-        // Aseguramos booleano para evitar errores visuales
-        const isAvailable = Boolean(book.disponible);
-        const statusClass = isAvailable ? 'status-available' : 'status-unavailable';
-        const statusText = isAvailable ? 'Disponible' : 'Prestado';
-
-        const rowHTML = html`
-          <tr id="row-${book.id}">
-             <td style="font-family: monospace; font-size: 0.9em;">${book.isbn}</td>
-             <td style="font-weight: 500;">${book.titulo}</td>
-             <td style="color: var(--text-secondary);">${book.autor}</td>
-             <td>
-                <span class="status-badge ${statusClass}">${statusText}</span>
-             </td>
-             <td class="text-right">
-                <button class="btn-icon edit-trigger" 
-                        title="Editar"
-                        data-id="${book.id}"
-                        data-isbn="${book.isbn}"
-                        data-titulo="${book.titulo}"
-                        data-autor="${book.autor}"
-                        data-genero="${book.genero}">
-                    ✏️
-                </button>
-                <button class="btn-icon delete-trigger" data-id="${book.id}" title="Eliminar">🗑️</button>
-             </td>
-          </tr>
-        `;
-        tbody.insertAdjacentHTML('beforeend', rowHTML);
-      });
-    } catch (error) {
-      console.error(error);
-      tbody.innerHTML = '<tr><td colspan="5" class="error">No se ha podido cargar los libros</td></tr>';
+    if (books.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 1rem;">No se encontraron libros</td></tr>';
+      return;
     }
+
+    books.forEach(book => {
+      const isAvailable = Boolean(book.disponible);
+      const statusClass = isAvailable ? 'status-available' : 'status-unavailable';
+      const statusText = isAvailable ? 'Disponible' : 'Prestado';
+
+      const rowHTML = html`
+        <tr id="row-${book.id}">
+           <td style="font-family: monospace; font-size: 0.9em;">${book.isbn}</td>
+           <td style="font-weight: 500;">${book.titulo}</td>
+           <td style="color: var(--text-secondary);">${book.autor}</td>
+           <td><span style="font-size: 0.85em; background: #222; padding: 2px 6px; border-radius: 4px;">${book.genero}</span></td>
+           <td>
+              <span class="status-badge ${statusClass}">${statusText}</span>
+           </td>
+           <td class="text-right">
+              <button class="btn-icon edit-trigger" 
+                      title="Editar"
+                      data-id="${book.id}"
+                      data-isbn="${book.isbn}"
+                      data-titulo="${book.titulo}"
+                      data-autor="${book.autor}"
+                      data-genero="${book.genero}">
+                  ✏️
+              </button>
+              <button class="btn-icon delete-trigger" data-id="${book.id}" title="Eliminar">🗑️</button>
+           </td>
+        </tr>
+      `;
+      tbody.insertAdjacentHTML('beforeend', rowHTML);
+    });
   }
 }

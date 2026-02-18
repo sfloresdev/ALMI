@@ -1,14 +1,7 @@
-# Features a implementar hoy
+# Features a implementar hoy/final
 
-- Añadir el visualizar el historico de devoluciones, los activos por defecto y luego los no devueltos
-ya se porque estan dentro del plazo o aquellos que estan caducados (esto podria ser con un pestaña
-un apartado que se llame historial)
-
-- Añadir la consulta de libros por genero, otra vez con una pestaña asi reutilizamos trabajo
+- Modal en la vista de Socios, para ver la info del usuario y su historial de devoluciones, el
+personal
 
 - Añadir el apartado "de préstamos devueltos por socio (histórico)" con un modal que permita
 ver datos del usuario, y deslizando abajo su historial de prestamos y los pendientes"
-
-
-
-# A implementar martes/miercoles

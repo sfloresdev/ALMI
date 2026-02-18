@@ -17,6 +17,17 @@ export class SociosService {
         }
     }
 
+    async getSocioById(id: number): Promise<Socio | null> {
+        try {
+            const response = await fetch(`/api/socios/${id}`);
+            if (!response.ok) return null;
+            return await response.json();
+        } catch (error) {
+            console.error("Error obteniendo socio por ID:", error);
+            return null;
+        }
+    }
+
     async createSocio(socio: Omit<Socio, 'id'>): Promise<boolean> {
         try {
             const response = await fetch("/api/socios", {

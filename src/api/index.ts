@@ -90,6 +90,10 @@ function handleApiRoutes(req: Request, url: URL) {
         if (req.method === "GET") return libroController.getLibros();
         if (req.method === "POST") return libroController.createLibro(req);
     }
+
+    const matchBuscar = url.pathname.match(/^\/api\/libros\/buscar\/(.+)$/);
+    if (matchBuscar && req.method === "GET") return libroController.buscarLibros(matchBuscar[1]);
+
     const matchGenero = url.pathname.match(/^\/api\/libros\/genero\/(.+)$/)
     if (matchGenero) {
         const genero = matchGenero[1];
@@ -106,6 +110,12 @@ function handleApiRoutes(req: Request, url: URL) {
     if (url.pathname === "/api/prestamos") {
         if (req.method === "POST") return prestamoController.createPrestamo(req);
         if (req.method === "GET") return prestamoController.getActivos();
+    }
+
+    const matchPrestamosSocio = url.pathname.match(/^\/api\/prestamos\/socio\/(\d+)$/);
+    if (matchPrestamosSocio && req.method === "GET") {
+        const socioId = parseInt(matchPrestamosSocio[1]);
+        return prestamoController.getPrestamosPorSocio(socioId);
     }
 
     if (url.pathname === "/api/prestamos/devoluciones") {

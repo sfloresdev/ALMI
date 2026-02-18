@@ -1,7 +1,9 @@
-import { db } from "./database";
+import { db, initDb } from "./database";
 import { sociosData, librosData, prestamosData, devolucionesData } from "./seedData";
 
 console.log("Seeding database...");
+
+initDb();
 
 const seedTransaction = db.transaction(() => {
 

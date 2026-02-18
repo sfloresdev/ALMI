@@ -48,5 +48,16 @@ export const initDb = () => {
             comentarios TEXT,
             FOREIGN KEY (prestamo_id) REFERENCES prestamos(id) ON DELETE CASCADE);`)
 
+        // Disparador para manejar eliminacion de prestamos
+        db.run(`
+        CREATE TRIGGER IF NOT EXISTS restaurar_disponibilidad_libro
+        AFTER DELETE ON prestamos
+        BEGIN
+            UPDATE libros 
+            SET disponible = 1 
+            WHERE id = OLD.libro_id;
+        END;`);
+
+        
         console.log("Tables succesfully created!")
 }

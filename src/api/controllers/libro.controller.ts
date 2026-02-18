@@ -20,6 +20,25 @@ export class LibroController {
         }
     }
 
+    // GET ("api/libros/buscar/:termino")
+    public buscarLibros(termino: string): Response {
+        try {
+            // Decodificamos el término por si incluye espacios o caracteres especiales
+            const terminoDecodificado = decodeURIComponent(termino);
+            
+            if (terminoDecodificado.length < 2) {
+                return Response.json({ error: "El término de búsqueda debe tener al menos 2 caracteres" }, { status: 400 });
+            }
+
+            const libros = this.libroService.searchByTitle(terminoDecodificado);
+            return Response.json(libros, { status: 200 });
+
+        } catch (error) {
+            console.error("Error en búsqueda:", error);
+            return Response.json({ error: "Error interno en el servidor" }, { status: 500 });
+        }
+    }
+
     // GET ("api/libros/genero/:genero")
     public getLibrosPorGenero(genero: string): Response {
         try {

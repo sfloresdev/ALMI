@@ -1,15 +1,18 @@
 import { Component } from "../components/Component";
 import { SociosService } from "../services/SocioService";
+import { PrestamoService } from "../services/PrestamoService";
 import type { Socio } from "../../shared/types";
 
 const html = String.raw;
 export class SociosView extends Component {
 
   private sociosService: SociosService;
+  private prestamoService: PrestamoService;
 
   constructor() {
     super();
     this.sociosService = new SociosService();
+    this.prestamoService = new PrestamoService();
   }
 
   render(): string {
@@ -74,6 +77,41 @@ export class SociosView extends Component {
             </form>
         </div>
       </dialog>
+
+      <dialog id="view-socio-modal" class="modal">
+        <div class="modal-content" style="text-align: left; max-width: 600px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <h3 id="view-socio-full-name">Nombre del Socio</h3>
+                    <p id="view-socio-info" style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.2rem;"></p>
+                </div>
+                <button type="button" style="color: #eee;" class="btn-icon" onclick="this.closest('dialog').close()">✕</button>
+            </div>
+
+            <h4 style="margin-top: 1.5rem; margin-bottom: 0.8rem; border-bottom: 1px solid #333; padding-bottom: 0.5rem;">
+                Historial de Préstamos
+            </h4>
+
+            <div style="max-height: 300px; overflow-y: auto; border-radius: 8px; background: #111;">
+                <table class="data-table" style="font-size: 0.95rem;">
+                    <thead>
+                        <tr>
+                            <th>Libro</th>
+                            <th>Inicio</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="view-socio-loans-tbody">
+                        <tr><td colspan="3" style="text-align:center; padding: 2rem;">Cargando préstamos...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="modal-actions" style="justify-content: flex-end; margin-top: 1.5rem;">
+                <button type="button" class="btn btn-secondary" onclick="this.closest('dialog').close()">Cerrar</button>
+            </div>
+        </div>
+      </dialog>
     </div>
     `;
   }
@@ -81,8 +119,10 @@ export class SociosView extends Component {
   async afterRender() {
     await this.loadTable();
 
-    // 2. Referencias a elementos del DOM (Botones y Modal)
+    // Modales
     const modal = document.getElementById('socio-modal') as HTMLDialogElement;
+    const viewModal = document.getElementById('view-socio-modal') as HTMLDialogElement;
+    // Referencias a elementos del DOM
     const form = document.getElementById('socio-form') as HTMLFormElement;
     const modalTitle = document.getElementById('modal-title');
     const tbody = document.getElementById('socios-tbody');
@@ -113,24 +153,69 @@ export class SociosView extends Component {
         telefono: formData.get('telefono') as string
       };
 
-      let success;
+      let success = idValue
+        ? await this.sociosService.updateSocio(Number(idValue), socioData)
+        : await this.sociosService.createSocio(socioData);
 
-      // CAMBIO 3: Si hay ID, actualizamos. Si no, creamos.
-      if (idValue)
-        success = await this.sociosService.updateSocio(Number(idValue), socioData);
-      else
-        success = await this.sociosService.createSocio(socioData);
       if (success) {
         modal.close();
         this.loadTable();
-      }
-      else
+      } else {
         alert("Error al guardar los datos.");
+      }
     });
 
     // EDITAR y BORRAR
     tbody?.addEventListener('click', async (e) => {
       const target = e.target as HTMLElement;
+
+      // LÓGICA DE VISUALIZACION
+      const viewBtn = target.closest('.view-trigger');
+      if (viewBtn) {
+        const id = Number(viewBtn.getAttribute('data-id'));
+        const socioString = viewBtn.getAttribute('data-json');
+
+        if (socioString) {
+          const socio = JSON.parse(socioString);
+
+          // Datos básicos
+          document.getElementById('view-socio-full-name')!.innerText = `${socio.nombre} ${socio.apellidos}`;
+          document.getElementById('view-socio-info')!.innerText = `Email: ${socio.email} | Tel: ${socio.telefono || '-'}`;
+
+          const loansTbody = document.getElementById('view-socio-loans-tbody')!;
+          loansTbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 1.5rem;">Cargando actividad...</td></tr>';
+
+          viewModal.showModal();
+
+          // Cargar historial desde el service
+          try {
+            const prestamos = await this.prestamoService.getPrestamosBySocio(id);
+            loansTbody.innerHTML = '';
+
+            if (prestamos.length === 0) {
+              loansTbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 1.5rem; color: #666;">Sin préstamos registrados.</td></tr>';
+            } else {
+              prestamos.forEach((p: any) => {
+                const fecha = new Date(p.fechaInicio || p.fecha_inicio).toLocaleDateString();
+                const isDevuelto = !!p.fechaDevolucion;
+                const badgeClass = isDevuelto ? 'status-badge' : 'status-badge status-available';
+                const statusText = isDevuelto ? 'Devuelto' : 'Activo';
+
+                loansTbody.insertAdjacentHTML('beforeend', `
+                  <tr>
+                    <td style="font-weight: 500;">${p.libro_titulo}</td>
+                    <td>${fecha}</td>
+                    <td><span class="${badgeClass}" style="${isDevuelto ? 'background: #333;' : ''}">${statusText}</span></td>
+                  </tr>
+                `);
+              });
+            }
+          } catch (err) {
+            loansTbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: var(--status-unavailable);">Error al conectar.</td></tr>';
+          }
+        }
+        return;
+      }
 
       // LÓGICA DE BORRAR
       const deleteBtn = target.closest('.delete-trigger');
@@ -142,7 +227,7 @@ export class SociosView extends Component {
         }
       }
 
-      // CAMBIO 2: LÓGICA DE EDITAR
+      // LÓGICA DE EDITAR
       const editBtn = target.closest('.edit-trigger'); // Buscamos el botón editar
       if (editBtn) {
         // Recuperamos el objeto socio que guardamos en el atributo data-json
@@ -201,6 +286,9 @@ export class SociosView extends Component {
       <td class="text-secondary">${socio.email}</td>
       <td>${socio.telefono || '-'}</td>
       <td class="text-right">
+        <button class="btn-icon view-trigger" data-id="${socio.id}" data-json='${socioData}' title="Ver historial">
+            🔍
+        </button>
         <button class="btn-icon edit-trigger" data-json='${socioData}' title="Editar">
             ✏️
         </button>

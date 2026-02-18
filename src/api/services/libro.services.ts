@@ -9,6 +9,17 @@ export class LibroService {
         return db.query("SELECT * FROM libros").all() as ILibro[];
     }
 
+    // GET/${libro}
+    public searchByTitle(termino: string): ILibro[] {
+        // El operador LIKE con % al inicio y final busca coincidencias en cualquier parte del texto
+        const query = db.query("SELECT * FROM libros WHERE titulo LIKE $termino");
+        
+        return query.all({ 
+            $termino: `%${termino}%` 
+        }) as ILibro[];
+    }
+
+
     // GET/genero
     public getByGenero(genero: string): ILibro[] {
         return db.query(`SELECT * FROM libros WHERE LOWER(genero) = LOWER($genero)`)
@@ -57,7 +68,6 @@ export class LibroService {
         });
         return result.changes > 0;
     }
-
 
     // DELETE
     public deleteLibro(id: number): boolean {

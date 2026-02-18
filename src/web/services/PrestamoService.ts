@@ -32,6 +32,21 @@ export class PrestamoService {
 		}
 	}
 
+	async getPrestamosBySocio(socioId: number): Promise<any[]> {
+		try {
+			// Coincide con tu backend: GET /api/prestamos/socio/:id
+			const response = await fetch(`/api/prestamos/socio/${socioId}`);
+
+			if (!response.ok) return [];
+
+			const data = await response.json();
+			return Array.isArray(data) ? data : [];
+		} catch (error) {
+			console.error("Error obteniendo préstamos del socio:", error);
+			return [];
+		}
+	}
+
 	async createPrestamo(prestamo: Omit<Prestamo, 'id'>) {
 		try {
 			const response = await fetch('/api/prestamos', {
@@ -41,7 +56,7 @@ export class PrestamoService {
 				},
 				body: JSON.stringify(prestamo)
 			});
-			return response.ok;
+			return await response.json();
 		} catch (error) {
 			console.error("Error creando prestamo: ", error)
 			return false;
@@ -60,10 +75,10 @@ export class PrestamoService {
 					comentarios: comentarios
 				})
 			});
-			return response.ok;
+			return await response.json();
 		} catch (error) {
 			console.error("Error creando prestamos: ", error);
-			return false;
+			return { success: false, message: "Error de conexión" };
 		}
 	}
 }

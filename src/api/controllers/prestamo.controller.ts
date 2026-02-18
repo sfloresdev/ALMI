@@ -27,6 +27,21 @@ export class PrestamoController {
         }
     }
 
+    // GET ("/api/prestamos/socio/:id")
+    public getPrestamosPorSocio(id: number): Response {
+        try {
+            // Llamamos al método que acabas de definir en el servicio
+            const prestamos = this.prestamosService.getPrestamosBySocio(id);
+            
+            // Si el socio no tiene préstamos, .all() devolverá un array vacío []
+            return Response.json(prestamos, { status: 200 });
+            
+        } catch (error) {
+            console.error(`Error obteniendo préstamos del socio ${id}:`, error);
+            return Response.json({ error: "Error interno al obtener el historial del socio" }, { status: 500 });
+        }
+    }
+
     // POST ("api/prestamos/devoluciones")
     public async createDevolucion(req: Request): Promise<Response> {
         try {
